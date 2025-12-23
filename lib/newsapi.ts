@@ -61,10 +61,23 @@ export async function fetchNewsByCategory(
     });
 
     if (!response.ok) {
-      throw new Error(`NewsAPI error: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('NewsAPI error response:', errorText);
+      throw new Error(`NewsAPI error: ${response.status} - ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response from NewsAPI:', text);
+      throw new Error('NewsAPI returned non-JSON response');
     }
 
     const data: NewsAPIResponse = await response.json();
+
+    if (data.status === 'error') {
+      throw new Error(`NewsAPI error: ${data.message || 'Unknown error'}`);
+    }
 
     return data.articles.map((article, index) => ({
       ...article,

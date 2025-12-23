@@ -29,6 +29,8 @@ export interface ObjectiveNews {
 
 export interface NewsAPIResponse {
   status: string;
-  totalResults: number;
+  totalResults?: number;
   articles: NewsArticle[];
+  message?: string;
+  code?: string;
 }
