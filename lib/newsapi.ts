@@ -1,7 +1,8 @@
 import { NewsAPIResponse, NewsArticle } from './types';
 
-const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
-const NEWSAPI_BASE_URL = 'https://newsapi.org/v2';
+// GNews API - Free tier: 100 requests/day, works in production
+const GNEWS_API_KEY = process.env.GNEWS_API_KEY;
+const GNEWS_BASE_URL = 'https://gnews.io/api/v4';
 
 export async function fetchTopHeadlines(
   country: string = 'us',
@@ -41,8 +42,8 @@ export async function fetchNewsByCategory(
   pageSize: number = 20,
   language: string = 'en'
 ): Promise<NewsArticle[]> {
-  if (!NEWSAPI_KEY) {
-    throw new Error('NEWSAPI_KEY is not configured');
+  if (!GNEWS_API_KEY) {
+    throw new Error('GNEWS_API_KEY is not configured');
   }
 
   const validCategories = ['business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology'];
@@ -52,9 +53,24 @@ export async function fetchNewsByCategory(
   }
 
   try {
-    // For Korean, use country=kr instead of language parameter for better results
-    const countryParam = language === 'ko' ? 'kr' : 'us';
-    const url = `${NEWSAPI_BASE_URL}/top-headlines?country=${countryParam}&category=${category}&pageSize=${pageSize}&apiKey=${NEWSAPI_KEY}`;
+    // GNews API uses 'topic' instead of 'category'
+    // Map categories to GNews topics
+    const topicMap: Record<string, string> = {
+      'general': 'breaking-news',
+      'business': 'business',
+      'entertainment': 'entertainment',
+      'health': 'health',
+      'science': 'science',
+      'sports': 'sports',
+      'technology': 'technology',
+    };
+
+    const topic = topicMap[category] || 'breaking-news';
+    const lang = language === 'ko' ? 'ko' : 'en';
+    const country = language === 'ko' ? 'kr' : 'us';
+
+    // GNews API format: /top-headlines?topic=breaking-news&lang=en&country=us&max=10&apikey=YOUR_API_KEY
+    const url = `${GNEWS_BASE_URL}/top-headlines?topic=${topic}&lang=${lang}&country=${country}&max=${pageSize}&apikey=${GNEWS_API_KEY}`;
 
     const response = await fetch(url, {
       next: { revalidate: 300 },
@@ -62,26 +78,36 @@ export async function fetchNewsByCategory(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('NewsAPI error response:', errorText);
-      throw new Error(`NewsAPI error: ${response.status} - ${response.statusText}`);
+      console.error('GNews API error response:', errorText);
+      throw new Error(`GNews API error: ${response.status} - ${response.statusText}`);
     }
 
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
-      console.error('Non-JSON response from NewsAPI:', text);
-      throw new Error('NewsAPI returned non-JSON response');
+      console.error('Non-JSON response from GNews API:', text);
+      throw new Error('GNews API returned non-JSON response');
     }
 
-    const data: NewsAPIResponse = await response.json();
+    const data = await response.json();
 
-    if (data.status === 'error') {
-      throw new Error(`NewsAPI error: ${data.message || 'Unknown error'}`);
+    if (data.errors) {
+      throw new Error(`GNews API error: ${JSON.stringify(data.errors)}`);
     }
 
-    return data.articles.map((article, index) => ({
-      ...article,
+    // Transform GNews format to our NewsArticle format
+    return data.articles.map((article: any, index: number) => ({
       id: `${category}-${Date.now()}-${index}`,
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      urlToImage: article.image,
+      publishedAt: article.publishedAt,
+      source: {
+        id: null,
+        name: article.source.name,
+      },
+      content: article.content,
     }));
   } catch (error) {
     console.error('Error fetching news by category:', error);

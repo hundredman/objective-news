@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useState } from 'react';
 
 interface NewsCardProps {
   news: ObjectiveNews;
@@ -12,6 +13,8 @@ interface NewsCardProps {
 
 export default function NewsCard({ news }: NewsCardProps) {
   const { language, t } = useLanguage();
+  const [imageError, setImageError] = useState(false);
+
   const importanceColor =
     news.importance >= 8 ? 'bg-red-500' :
     news.importance >= 6 ? 'bg-amber-500' :
@@ -22,7 +25,7 @@ export default function NewsCard({ news }: NewsCardProps) {
       className="group card-shadow hover:card-shadow-hover rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
       style={{ background: 'var(--card-bg)' }}
     >
-      {news.imageUrl && (
+      {news.imageUrl && !imageError && (
         <div className="relative w-full h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
           <Image
             src={news.imageUrl}
@@ -30,6 +33,7 @@ export default function NewsCard({ news }: NewsCardProps) {
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             unoptimized
+            onError={() => setImageError(true)}
           />
           <div className="absolute top-3 right-3">
             <div className={`${importanceColor} text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm bg-opacity-90`}>
@@ -47,7 +51,7 @@ export default function NewsCard({ news }: NewsCardProps) {
               locale: language === 'ko' ? ko : undefined
             })}
           </span>
-          {!news.imageUrl && (
+          {(!news.imageUrl || imageError) && (
             <div className={`${importanceColor} text-white px-2.5 py-1 rounded-full text-xs font-semibold`}>
               {news.importance}/10
             </div>
