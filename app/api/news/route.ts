@@ -10,9 +10,13 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const category = searchParams.get('category') || 'all';
     const limit = parseInt(searchParams.get('limit') || '10');
+    const language = searchParams.get('language') || 'en';
+
+    // Create cache key with language
+    const cacheKey = `${category}-${language}`;
 
     // Try to get cached news first
-    const cachedNews = await getCachedNews(category);
+    const cachedNews = await getCachedNews(cacheKey);
     if (cachedNews && cachedNews.length > 0) {
       return NextResponse.json({
         success: true,
@@ -25,9 +29,10 @@ export async function GET(request: NextRequest) {
     // Fetch news articles
     let articles;
     if (category && category !== 'all') {
-      articles = await fetchNewsByCategory(category, limit);
+      articles = await fetchNewsByCategory(category, limit, language);
     } else {
-      articles = await fetchTopHeadlines('us', limit);
+      // For 'all', use general category with language
+      articles = await fetchNewsByCategory('general', limit, language);
     }
 
     // Extract objective facts using client-side filtering (NO AI API costs!)
@@ -36,8 +41,8 @@ export async function GET(request: NextRequest) {
     // Group related news items
     const groupedNews = groupRelatedNews(objectiveNews);
 
-    // Cache the results
-    await cacheNews(category, groupedNews);
+    // Cache the results with language key
+    await cacheNews(cacheKey, groupedNews);
 
     return NextResponse.json({
       success: true,

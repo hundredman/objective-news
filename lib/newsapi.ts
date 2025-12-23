@@ -38,7 +38,8 @@ export async function fetchTopHeadlines(
 
 export async function fetchNewsByCategory(
   category: string,
-  pageSize: number = 20
+  pageSize: number = 20,
+  language: string = 'en'
 ): Promise<NewsArticle[]> {
   if (!NEWSAPI_KEY) {
     throw new Error('NEWSAPI_KEY is not configured');
@@ -51,12 +52,13 @@ export async function fetchNewsByCategory(
   }
 
   try {
-    const response = await fetch(
-      `${NEWSAPI_BASE_URL}/top-headlines?category=${category}&pageSize=${pageSize}&apiKey=${NEWSAPI_KEY}`,
-      {
-        next: { revalidate: 300 },
-      }
-    );
+    // For Korean, use country=kr instead of language parameter for better results
+    const countryParam = language === 'ko' ? 'kr' : 'us';
+    const url = `${NEWSAPI_BASE_URL}/top-headlines?country=${countryParam}&category=${category}&pageSize=${pageSize}&apiKey=${NEWSAPI_KEY}`;
+
+    const response = await fetch(url, {
+      next: { revalidate: 300 },
+    });
 
     if (!response.ok) {
       throw new Error(`NewsAPI error: ${response.statusText}`);

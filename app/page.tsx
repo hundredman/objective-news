@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import NewsCard from '@/components/NewsCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import { ObjectiveNews } from '@/lib/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Home() {
+  const { language, setLanguage, t } = useLanguage();
   const [news, setNews] = useState<ObjectiveNews[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,14 +16,14 @@ export default function Home() {
 
   useEffect(() => {
     fetchNews();
-  }, [selectedCategory]);
+  }, [selectedCategory, language]);
 
   async function fetchNews() {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/news?category=${selectedCategory}&limit=10`);
+      const response = await fetch(`/api/news?category=${selectedCategory}&limit=10&language=${language}`);
       const data = await response.json();
 
       if (!data.success) {
@@ -39,56 +41,101 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Objective News
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Fact-based news without bias or opinions
-          </p>
-        </div>
-      </header>
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      {/* Hero Header */}
+      <header className="border-b" style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          {/* Language Toggle */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              </svg>
+              <span className="text-sm font-medium">{language === 'en' ? '한국어' : 'English'}</span>
+            </button>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="mb-6">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold mb-3 tracking-tight" style={{ color: 'var(--foreground)' }}>
+              {t.title}
+            </h1>
+            <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+              {t.subtitle}
+            </p>
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-sm font-medium">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              {t.badge}
+            </div>
+          </div>
+
           <CategoryFilter
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
           />
         </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8">
         {cached && (
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              Showing cached results (updates every 5 minutes)
-            </p>
+          <div className="mb-6 p-4 rounded-xl border backdrop-blur-sm" style={{
+            background: 'rgba(59, 130, 246, 0.05)',
+            borderColor: 'rgba(59, 130, 246, 0.2)'
+          }}>
+            <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {t.cached}
+            </div>
           </div>
         )}
 
         {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="relative w-16 h-16 mb-4">
+              <div className="absolute inset-0 border-4 border-gray-200 dark:border-gray-700 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-blue-600 dark:border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <p className="text-gray-500 dark:text-gray-400">{t.loading}</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-            <h3 className="text-red-800 dark:text-red-200 font-semibold mb-2">Error</h3>
-            <p className="text-red-700 dark:text-red-300">{error}</p>
-            <button
-              onClick={fetchNews}
-              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Retry
-            </button>
+          <div className="card-shadow rounded-2xl p-6 mb-6" style={{ background: 'var(--card-bg)' }}>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-900 dark:text-red-100 mb-1">{t.errorTitle}</h3>
+                <p className="text-red-700 dark:text-red-300 text-sm mb-3">{error}</p>
+                <button
+                  onClick={fetchNews}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {t.tryAgain}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
         {!loading && !error && news.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-gray-500 dark:text-gray-400">No news available</p>
+          <div className="text-center py-32">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-gray-500 dark:text-gray-400">{t.noNews}</p>
           </div>
         )}
 
@@ -99,25 +146,40 @@ export default function Home() {
         </div>
 
         {!loading && news.length > 0 && (
-          <div className="mt-8 text-center">
+          <div className="mt-12 text-center">
             <button
               onClick={fetchNews}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+              className="px-8 py-3 rounded-xl font-medium transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: 'var(--accent)',
+                color: 'white',
+                boxShadow: '0 4px 14px 0 rgba(37, 99, 235, 0.25)'
+              }}
             >
-              Refresh News
+              {t.refreshNews}
             </button>
           </div>
         )}
-      </div>
+      </main>
 
-      <footer className="mt-16 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Objective News aggregates news from various sources and filters out subjective opinions automatically.
-          </p>
-          <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">
-            News data from NewsAPI • Client-side fact filtering (100% Free, No AI API costs)
-          </p>
+      {/* Footer */}
+      <footer className="mt-24 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <h3 className="font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
+              {t.footerTitle}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto">
+              {t.footerDescription}
+            </p>
+            <div className="flex items-center justify-center gap-6 text-xs text-gray-400">
+              <span>{t.footerTech}</span>
+              <span>•</span>
+              <span>{t.footerFilter}</span>
+              <span>•</span>
+              <span className="text-green-600 dark:text-green-400 font-medium">{t.footerFree}</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

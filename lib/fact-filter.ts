@@ -40,32 +40,62 @@ const BIASED_WORDS = [
 ];
 
 /**
+ * 한국어 텍스트인지 확인
+ */
+function isKoreanText(text: string): boolean {
+  // 한글 유니코드 범위: AC00-D7A3
+  return /[\uAC00-\uD7A3]/.test(text);
+}
+
+/**
  * 문장이 객관적인 사실인지 판단
  */
 function isFactualSentence(sentence: string): boolean {
   // 너무 짧은 문장 제외
   if (sentence.length < 20) return false;
 
-  // 주관적 패턴이 포함된 문장 제외
-  for (const pattern of SUBJECTIVE_PATTERNS) {
-    if (pattern.test(sentence)) return false;
-  }
-
-  // 감정적 단어가 포함된 문장 제외
-  for (const word of BIASED_WORDS) {
-    if (word.test(sentence)) return false;
-  }
-
   // 질문 형태 제외
   if (sentence.includes('?')) return false;
 
-  // 숫자, 날짜, 고유명사가 포함된 문장 우선
-  const hasNumbers = /\d+/.test(sentence);
-  const hasProperNouns = /[A-Z][a-z]+/.test(sentence);
-  const hasDate = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December|\d{4})/i.test(sentence);
+  const isKorean = isKoreanText(sentence);
 
-  // 최소한 하나는 있어야 함
-  return hasNumbers || hasProperNouns || hasDate;
+  // 한국어가 아닌 경우에만 영어 패턴 체크
+  if (!isKorean) {
+    // 주관적 패턴이 포함된 문장 제외
+    for (const pattern of SUBJECTIVE_PATTERNS) {
+      if (pattern.test(sentence)) return false;
+    }
+
+    // 감정적 단어가 포함된 문장 제외
+    for (const word of BIASED_WORDS) {
+      if (word.test(sentence)) return false;
+    }
+
+    // 숫자, 날짜, 고유명사가 포함된 문장 우선
+    const hasNumbers = /\d+/.test(sentence);
+    const hasProperNouns = /[A-Z][a-z]+/.test(sentence);
+    const hasDate = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December|\d{4})/i.test(sentence);
+
+    // 최소한 하나는 있어야 함
+    return hasNumbers || hasProperNouns || hasDate;
+  } else {
+    // 한국어의 경우 더 관대하게 처리
+    // 한국어 주관적 패턴
+    const koreanSubjectivePatterns = [
+      /것으로 보인다/,
+      /것으로 알려졌다/,
+      /추정/,
+      /예상/,
+      /전망/,
+    ];
+
+    for (const pattern of koreanSubjectivePatterns) {
+      if (pattern.test(sentence)) return false;
+    }
+
+    // 한국어는 기본적으로 통과 (질문만 제외)
+    return true;
+  }
 }
 
 /**
