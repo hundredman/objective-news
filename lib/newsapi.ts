@@ -8,33 +8,9 @@ export async function fetchTopHeadlines(
   country: string = 'us',
   pageSize: number = 20
 ): Promise<NewsArticle[]> {
-  if (!NEWSAPI_KEY) {
-    throw new Error('NEWSAPI_KEY is not configured');
-  }
-
-  try {
-    const response = await fetch(
-      `${NEWSAPI_BASE_URL}/top-headlines?country=${country}&pageSize=${pageSize}&apiKey=${NEWSAPI_KEY}`,
-      {
-        next: { revalidate: 300 }, // Cache for 5 minutes
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`NewsAPI error: ${response.statusText}`);
-    }
-
-    const data: NewsAPIResponse = await response.json();
-
-    // Add unique IDs to articles
-    return data.articles.map((article, index) => ({
-      ...article,
-      id: `${Date.now()}-${index}`,
-    }));
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    throw error;
-  }
+  // This function is deprecated, use fetchNewsByCategory instead
+  const language = country === 'kr' ? 'ko' : 'en';
+  return fetchNewsByCategory('general', pageSize, language);
 }
 
 export async function fetchNewsByCategory(
@@ -117,29 +93,53 @@ export async function fetchNewsByCategory(
 
 export async function searchNews(
   query: string,
-  pageSize: number = 20
+  pageSize: number = 20,
+  language: string = 'en'
 ): Promise<NewsArticle[]> {
-  if (!NEWSAPI_KEY) {
-    throw new Error('NEWSAPI_KEY is not configured');
+  if (!GNEWS_API_KEY) {
+    throw new Error('GNEWS_API_KEY is not configured');
   }
 
   try {
-    const response = await fetch(
-      `${NEWSAPI_BASE_URL}/everything?q=${encodeURIComponent(query)}&pageSize=${pageSize}&sortBy=publishedAt&apiKey=${NEWSAPI_KEY}`,
-      {
-        next: { revalidate: 300 },
-      }
-    );
+    const lang = language === 'ko' ? 'ko' : 'en';
+    const url = `${GNEWS_BASE_URL}/search?q=${encodeURIComponent(query)}&lang=${lang}&max=${pageSize}&apikey=${GNEWS_API_KEY}`;
+
+    const response = await fetch(url, {
+      next: { revalidate: 300 },
+    });
 
     if (!response.ok) {
-      throw new Error(`NewsAPI error: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('GNews API error response:', errorText);
+      throw new Error(`GNews API error: ${response.status} - ${response.statusText}`);
     }
 
-    const data: NewsAPIResponse = await response.json();
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response from GNews API:', text);
+      throw new Error('GNews API returned non-JSON response');
+    }
 
-    return data.articles.map((article, index) => ({
-      ...article,
+    const data = await response.json();
+
+    if (data.errors) {
+      throw new Error(`GNews API error: ${JSON.stringify(data.errors)}`);
+    }
+
+    // Transform GNews format to our NewsArticle format
+    return data.articles.map((article: any, index: number) => ({
       id: `search-${Date.now()}-${index}`,
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      urlToImage: article.image,
+      publishedAt: article.publishedAt,
+      source: {
+        id: null,
+        name: article.source.name,
+      },
+      content: article.content,
     }));
   } catch (error) {
     console.error('Error searching news:', error);
