@@ -113,14 +113,14 @@ function extractFacts(text: string): string[] {
   // 객관적인 사실만 필터링
   const facts = sentences
     .filter(isFactualSentence)
+    .filter(s => {
+      // "..." (마침표 3개) 또는 "…" (유니코드 생략 기호) 포함된 불완전한 문장 제거
+      return !s.includes('...') && !s.includes('…') && !s.endsWith('..');
+    })
     .map(s => {
       // 문장이 마침표로 끝나지 않으면 추가
       if (!s.endsWith('.')) s += '.';
       return s;
-    })
-    .filter(s => {
-      // "..."으로 끝나는 불완전한 문장 제거 (API에서 잘린 텍스트)
-      return !s.includes('...');
     })
     .slice(0, 7); // 최대 7개
 
