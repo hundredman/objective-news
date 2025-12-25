@@ -43,6 +43,7 @@ export default function NewsCard({ news, isNew = false }: NewsCardProps) {
 
   return (
     <article
+      data-news-new={isNew ? "true" : undefined}
       className={`group card-shadow hover:card-shadow-hover rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
         isNew ? 'ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900' : ''
       }`}

@@ -39,29 +39,39 @@ export default function Home() {
 
       const newData = data.data || [];
 
-      // Track new news items
+      // Track new news items (only when force refreshing)
       if (forceRefresh && previousNewsIds.size > 0) {
-        const currentIds = new Set<string>(newData.map((item: ObjectiveNews) => item.id));
         const newIds = new Set<string>();
 
-        currentIds.forEach((id: string) => {
-          if (!previousNewsIds.has(id)) {
-            newIds.add(id);
+        // Find truly new items (not in previous list)
+        newData.forEach((item: ObjectiveNews) => {
+          if (!previousNewsIds.has(item.id)) {
+            newIds.add(item.id);
           }
         });
 
-        setNewNewsIds(newIds);
+        if (newIds.size > 0) {
+          setNewNewsIds(newIds);
 
-        // Clear "new" badges after 10 seconds
-        setTimeout(() => {
-          setNewNewsIds(new Set());
-        }, 10000);
-      } else {
-        setNewNewsIds(new Set());
+          // Scroll to first new news after render
+          setTimeout(() => {
+            const firstNewElement = document.querySelector('[data-news-new="true"]');
+            if (firstNewElement) {
+              firstNewElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+
+          // Clear "new" badges after 10 seconds
+          setTimeout(() => {
+            setNewNewsIds(new Set());
+          }, 10000);
+        }
       }
 
-      // Update previous news IDs for next refresh
-      setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
+      // Update previous news IDs for next refresh (always update when data changes)
+      if (!forceRefresh || previousNewsIds.size === 0) {
+        setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
+      }
 
       setNews(newData);
       setCached(data.cached || false);

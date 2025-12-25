@@ -12,13 +12,36 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  // Detect user's location/language preference
+  const getDefaultLanguage = (): Language => {
+    // Check if running in browser
+    if (typeof window === 'undefined') return 'en';
 
-  useEffect(() => {
-    // Load saved language from localStorage
+    // First check localStorage for saved preference
     const saved = localStorage.getItem('language') as Language;
     if (saved && (saved === 'en' || saved === 'ko')) {
-      setLanguageState(saved);
+      return saved;
+    }
+
+    // Detect from browser language settings
+    const browserLang = navigator.language || (navigator as any).userLanguage;
+
+    // Check if Korean (ko, ko-KR, ko-kr, etc.)
+    if (browserLang.toLowerCase().startsWith('ko')) {
+      return 'ko';
+    }
+
+    // Default to English for all other regions
+    return 'en';
+  };
+
+  const [language, setLanguageState] = useState<Language>(getDefaultLanguage());
+
+  useEffect(() => {
+    // Re-check on mount in case initial state was server-side
+    const defaultLang = getDefaultLanguage();
+    if (defaultLang !== language) {
+      setLanguageState(defaultLang);
     }
   }, []);
 
