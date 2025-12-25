@@ -3,10 +3,10 @@ import { fetchTopHeadlines, fetchNewsByCategory } from '@/lib/newsapi';
 import { processArticles, groupRelatedNews } from '@/lib/fact-filter';
 import { getCachedNews, cacheNews } from '@/lib/firebase';
 
-// Cache API responses for 5 minutes
+// Cache API responses for 5 minutes, but allow dynamic params
 export const revalidate = 300;
-export const dynamic = 'force-static';
-export const fetchCache = 'force-cache';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'default-cache';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,13 +19,14 @@ export async function GET(request: NextRequest) {
     const cacheKey = `${category}-${language}`;
 
     // Try to get cached news first
-    const cachedNews = await getCachedNews(cacheKey);
-    if (cachedNews && cachedNews.length > 0) {
+    const cacheResult = await getCachedNews(cacheKey);
+    if (cacheResult && cacheResult.articles.length > 0) {
       return NextResponse.json({
         success: true,
-        data: cachedNews,
-        count: cachedNews.length,
+        data: cacheResult.articles,
+        count: cacheResult.articles.length,
         cached: true,
+        cachedAt: cacheResult.cachedAt,
       });
     }
 
@@ -45,13 +46,15 @@ export async function GET(request: NextRequest) {
     const groupedNews = groupRelatedNews(objectiveNews);
 
     // Cache the results with language key
-    await cacheNews(cacheKey, groupedNews);
+    const cachedAt = new Date().toISOString();
+    await cacheNews(cacheKey, groupedNews, cachedAt);
 
     return NextResponse.json({
       success: true,
       data: groupedNews,
       count: groupedNews.length,
       cached: false,
+      cachedAt,
     });
   } catch (error) {
     console.error('Error in /api/news:', error);

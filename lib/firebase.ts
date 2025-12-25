@@ -19,13 +19,14 @@ const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 // In-memory cache to reduce Firebase queries
 interface CacheEntry {
-  data: ObjectiveNews[];
+  articles: ObjectiveNews[];
+  cachedAt: string;
   timestamp: number;
 }
 
 const memoryCache = new Map<string, CacheEntry>();
 
-function getMemoryCache(key: string): ObjectiveNews[] | null {
+function getMemoryCache(key: string): { articles: ObjectiveNews[]; cachedAt: string } | null {
   const entry = memoryCache.get(key);
   if (!entry) return null;
 
@@ -35,17 +36,18 @@ function getMemoryCache(key: string): ObjectiveNews[] | null {
     return null;
   }
 
-  return entry.data;
+  return { articles: entry.articles, cachedAt: entry.cachedAt };
 }
 
-function setMemoryCache(key: string, data: ObjectiveNews[]): void {
+function setMemoryCache(key: string, articles: ObjectiveNews[], cachedAt: string): void {
   memoryCache.set(key, {
-    data,
+    articles,
+    cachedAt,
     timestamp: Date.now(),
   });
 }
 
-export async function getCachedNews(category: string = 'all'): Promise<ObjectiveNews[] | null> {
+export async function getCachedNews(category: string = 'all'): Promise<{ articles: ObjectiveNews[]; cachedAt: string } | null> {
   try {
     // Check memory cache first
     const memCached = getMemoryCache(category);
@@ -73,29 +75,32 @@ export async function getCachedNews(category: string = 'all'): Promise<Objective
     }
 
     const doc = snapshot.docs[0];
-    const articles = doc.data().articles as ObjectiveNews[];
+    const data = doc.data();
+    const articles = data.articles as ObjectiveNews[];
+    const cachedAt = data.cachedAtISO as string || new Date().toISOString();
 
     // Store in memory cache
-    setMemoryCache(category, articles);
+    setMemoryCache(category, articles, cachedAt);
     console.log(`[Cache Hit] Firebase cache for ${category}`);
 
-    return articles;
+    return { articles, cachedAt };
   } catch (error) {
     console.error('Error fetching cached news:', error);
     return null;
   }
 }
 
-export async function cacheNews(category: string, articles: ObjectiveNews[]): Promise<void> {
+export async function cacheNews(category: string, articles: ObjectiveNews[], cachedAtISO: string): Promise<void> {
   try {
     // Store in memory cache first for immediate access
-    setMemoryCache(category, articles);
+    setMemoryCache(category, articles, cachedAtISO);
 
     // Then store in Firebase for persistence
     await addDoc(collection(db, 'news'), {
       category,
       articles,
       cachedAt: Timestamp.now(),
+      cachedAtISO,
     });
   } catch (error) {
     console.error('Error caching news:', error);

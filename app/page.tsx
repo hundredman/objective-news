@@ -14,6 +14,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cached, setCached] = useState(false);
+  const [cachedAt, setCachedAt] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNews();
@@ -33,6 +34,7 @@ export default function Home() {
 
       setNews(data.data);
       setCached(data.cached || false);
+      setCachedAt(data.cachedAt || null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setNews([]);
@@ -83,16 +85,28 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {cached && (
+        {cached && cachedAt && (
           <div className="mb-6 p-4 rounded-xl border backdrop-blur-sm" style={{
             background: 'rgba(59, 130, 246, 0.05)',
             borderColor: 'rgba(59, 130, 246, 0.2)'
           }}>
-            <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              {t.cached}
+            <div className="flex items-center justify-between gap-2 text-sm text-blue-600 dark:text-blue-400">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {t.cached}
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {t.lastUpdated}: {new Date(cachedAt).toLocaleTimeString(language === 'ko' ? 'ko-KR' : 'en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: language === 'en'
+                })}
+              </div>
             </div>
           </div>
         )}
