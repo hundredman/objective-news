@@ -211,13 +211,18 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
   const fullText = `${article.title}. ${article.description || ''} ${article.content || ''}`;
   const facts = extractFacts(fullText);
 
+  // 제목과 동일하거나 매우 유사한 사실 제거 (90% 이상 유사도)
+  const filteredFacts = facts.filter(fact =>
+    calculateSimilarity(fact, article.title) < 0.9
+  );
+
   // 사실이 하나도 추출되지 않으면 null 반환
-  if (facts.length === 0) return null;
+  if (filteredFacts.length === 0) return null;
 
   return {
     id: article.id,
     title: article.title,
-    facts,
+    facts: filteredFacts,
     sources: [
       {
         name: article.source.name,
