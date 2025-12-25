@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import NewsCard from '@/components/NewsCard';
 import CategoryFilter from '@/components/CategoryFilter';
+import SkeletonCard from '@/components/SkeletonCard';
 import { ObjectiveNews } from '@/lib/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -97,12 +98,10 @@ export default function Home() {
         )}
 
         {loading && (
-          <div className="flex flex-col items-center justify-center py-32">
-            <div className="relative w-16 h-16 mb-4">
-              <div className="absolute inset-0 border-4 border-gray-200 dark:border-gray-700 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-blue-600 dark:border-blue-500 rounded-full border-t-transparent animate-spin"></div>
-            </div>
-            <p className="text-gray-500 dark:text-gray-400">{t.loading}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         )}
 

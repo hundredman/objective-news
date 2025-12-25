@@ -3,7 +3,10 @@ import { fetchTopHeadlines, fetchNewsByCategory } from '@/lib/newsapi';
 import { processArticles, groupRelatedNews } from '@/lib/fact-filter';
 import { getCachedNews, cacheNews } from '@/lib/firebase';
 
-export const dynamic = 'force-dynamic';
+// Cache API responses for 5 minutes
+export const revalidate = 300;
+export const dynamic = 'force-static';
+export const fetchCache = 'force-cache';
 
 export async function GET(request: NextRequest) {
   try {

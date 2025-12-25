@@ -32,7 +32,9 @@ export default function NewsCard({ news }: NewsCardProps) {
             alt={news.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
-            unoptimized
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority={false}
+            loading="lazy"
             onError={() => setImageError(true)}
           />
           <div className="absolute top-3 right-3">
