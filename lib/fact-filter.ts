@@ -118,6 +118,10 @@ function extractFacts(text: string): string[] {
       if (!s.endsWith('.')) s += '.';
       return s;
     })
+    .filter(s => {
+      // "..."으로 끝나는 불완전한 문장 제거 (API에서 잘린 텍스트)
+      return !s.includes('...');
+    })
     .slice(0, 7); // 최대 7개
 
   return facts;
