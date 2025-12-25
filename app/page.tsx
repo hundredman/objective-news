@@ -20,12 +20,13 @@ export default function Home() {
     fetchNews();
   }, [selectedCategory, language]);
 
-  async function fetchNews() {
+  async function fetchNews(forceRefresh = false) {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/news?category=${selectedCategory}&limit=10&language=${language}`);
+      const refreshParam = forceRefresh ? '&refresh=true' : '';
+      const response = await fetch(`/api/news?category=${selectedCategory}&limit=10&language=${language}${refreshParam}`);
       const data = await response.json();
 
       console.log('API Response:', data);
@@ -136,7 +137,7 @@ export default function Home() {
                 <h3 className="font-semibold text-red-900 dark:text-red-100 mb-1">{t.errorTitle}</h3>
                 <p className="text-red-700 dark:text-red-300 text-sm mb-3">{error}</p>
                 <button
-                  onClick={fetchNews}
+                  onClick={() => fetchNews(true)}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   {t.tryAgain}
@@ -166,7 +167,7 @@ export default function Home() {
         {!loading && news.length > 0 && (
           <div className="mt-12 text-center">
             <button
-              onClick={fetchNews}
+              onClick={() => fetchNews(true)}
               className="px-8 py-3 rounded-xl font-medium transition-all hover:scale-105 active:scale-95"
               style={{
                 background: 'var(--accent)',

@@ -22,21 +22,26 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category') || 'all';
     const limit = parseInt(searchParams.get('limit') || '10');
     const language = searchParams.get('language') || 'en';
+    const forceRefresh = searchParams.get('refresh') === 'true';
 
     // Create cache key with language
     const cacheKey = `${category}-${language}`;
 
-    // Check in-memory cache
-    const cached = memoryCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log(`[Cache Hit] ${cacheKey}`);
-      return NextResponse.json({
-        success: true,
-        data: cached.data,
-        count: cached.data.length,
-        cached: true,
-        cachedAt: cached.cachedAt,
-      });
+    // Check in-memory cache (skip if force refresh)
+    if (!forceRefresh) {
+      const cached = memoryCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        console.log(`[Cache Hit] ${cacheKey}`);
+        return NextResponse.json({
+          success: true,
+          data: cached.data,
+          count: cached.data.length,
+          cached: true,
+          cachedAt: cached.cachedAt,
+        });
+      }
+    } else {
+      console.log(`[Force Refresh] ${cacheKey}`);
     }
 
     console.log(`[Cache Miss] Fetching fresh data for ${cacheKey}`);
