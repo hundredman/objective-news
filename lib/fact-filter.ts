@@ -210,6 +210,19 @@ export function processArticles(articles: NewsArticle[]): ObjectiveNews[] {
 }
 
 /**
+ * 문자열을 간단한 해시로 변환 (안정적인 ID 생성용)
+ */
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
+/**
  * 유사한 뉴스 그룹화
  */
 export function groupRelatedNews(newsItems: ObjectiveNews[]): ObjectiveNews[] {
@@ -219,13 +232,16 @@ export function groupRelatedNews(newsItems: ObjectiveNews[]): ObjectiveNews[] {
     // 제목의 주요 단어로 그룹화 키 생성
     const titleWords = item.title
       .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/[^a-z0-9가-힣\s]/g, '') // 한글도 포함
       .split(/\s+/)
       .filter(word => word.length > 4) // 4글자 이상 단어만
       .slice(0, 3)
       .join(' ');
 
     const key = titleWords || item.title.substring(0, 30);
+
+    // 안정적인 ID 생성: 제목 기반 해시
+    const stableId = simpleHash(item.title.toLowerCase().trim());
 
     if (grouped.has(key)) {
       const existing = grouped.get(key)!;
@@ -236,8 +252,10 @@ export function groupRelatedNews(newsItems: ObjectiveNews[]): ObjectiveNews[] {
       existing.facts = uniqueFacts;
       existing.sources.push(...item.sources);
       existing.importance = Math.max(existing.importance, item.importance);
+      // ID는 유지 (이미 설정된 stable ID)
     } else {
-      grouped.set(key, { ...item });
+      // 새로운 그룹: 안정적인 ID 사용
+      grouped.set(key, { ...item, id: stableId });
     }
   }
 
