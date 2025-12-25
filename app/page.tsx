@@ -15,6 +15,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cached, setCached] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
+  const [previousNewsIds, setPreviousNewsIds] = useState<Set<string>>(new Set());
+  const [newNewsIds, setNewNewsIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchNews();
@@ -35,11 +37,37 @@ export default function Home() {
         throw new Error(data.error || 'Failed to fetch news');
       }
 
-      setNews(data.data || []);
+      const newData = data.data || [];
+
+      // Track new news items
+      if (forceRefresh && previousNewsIds.size > 0) {
+        const currentIds = new Set(newData.map((item: ObjectiveNews) => item.id));
+        const newIds = new Set<string>();
+
+        currentIds.forEach((id) => {
+          if (!previousNewsIds.has(id)) {
+            newIds.add(id);
+          }
+        });
+
+        setNewNewsIds(newIds);
+
+        // Clear "new" badges after 10 seconds
+        setTimeout(() => {
+          setNewNewsIds(new Set());
+        }, 10000);
+      } else {
+        setNewNewsIds(new Set());
+      }
+
+      // Update previous news IDs for next refresh
+      setPreviousNewsIds(new Set(newData.map((item: ObjectiveNews) => item.id)));
+
+      setNews(newData);
       setCached(data.cached || false);
       setCachedAt(data.cachedAt || null);
 
-      console.log('News loaded:', data.data?.length || 0, 'articles');
+      console.log('News loaded:', newData.length || 0, 'articles');
     } catch (err) {
       console.error('Error fetching news:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -160,7 +188,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {news.map((item) => (
-            <NewsCard key={item.id} news={item} />
+            <NewsCard key={item.id} news={item} isNew={newNewsIds.has(item.id)} />
           ))}
         </div>
 

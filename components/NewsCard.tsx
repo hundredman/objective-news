@@ -9,9 +9,10 @@ import { useState } from 'react';
 
 interface NewsCardProps {
   news: ObjectiveNews;
+  isNew?: boolean;
 }
 
-export default function NewsCard({ news }: NewsCardProps) {
+export default function NewsCard({ news, isNew = false }: NewsCardProps) {
   const { language, t } = useLanguage();
   const [imageError, setImageError] = useState(false);
 
@@ -42,7 +43,9 @@ export default function NewsCard({ news }: NewsCardProps) {
 
   return (
     <article
-      className="group card-shadow hover:card-shadow-hover rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+      className={`group card-shadow hover:card-shadow-hover rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+        isNew ? 'ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900' : ''
+      }`}
       style={{ background: 'var(--card-bg)' }}
     >
       {news.imageUrl && !imageError && (
@@ -82,12 +85,19 @@ export default function NewsCard({ news }: NewsCardProps) {
           )}
         </div>
 
-        <h2
-          className="text-xl font-bold mb-4 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
-          style={{ color: 'var(--foreground)' }}
-        >
-          {news.title}
-        </h2>
+        <div className="flex items-start gap-2 mb-4">
+          <h2
+            className="text-xl font-bold leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex-1"
+            style={{ color: 'var(--foreground)' }}
+          >
+            {news.title}
+          </h2>
+          {isNew && (
+            <span className="flex-shrink-0 px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full animate-pulse">
+              {t.newBadge}
+            </span>
+          )}
+        </div>
 
         <div className="space-y-3 mb-5">
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
