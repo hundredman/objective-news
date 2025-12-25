@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     title: 'Objective News',
-    subtitle: 'Only the facts. No opinions, no bias—just verified information.',
+    subtitle: 'Only the facts. No opinions, no bias—just the information.',
     badge: '100% Free • No AI API costs',
     categories: {
       all: 'All News',
@@ -37,7 +37,7 @@ export const translations = {
   },
   ko: {
     title: '객관적 뉴스',
-    subtitle: '오직 사실만. 의견이나 편향 없이, 검증된 정보만 제공합니다.',
+    subtitle: '오직 사실만. 의견이나 편향 없이 정보를 전달합니다.',
     badge: '100% 무료 • AI API 비용 없음',
     categories: {
       all: '전체 뉴스',
