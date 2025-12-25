@@ -11,10 +11,8 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
   },
-  // Enable Edge Runtime for API routes
-  experimental: {
-    serverComponentsExternalPackages: ['firebase-admin'],
-  },
+  // External packages for server components
+  serverExternalPackages: ['firebase-admin'],
 };
 
 export default nextConfig;

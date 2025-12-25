@@ -28,6 +28,8 @@ export default function Home() {
       const response = await fetch(`/api/news?category=${selectedCategory}&limit=10&language=${language}`);
       const data = await response.json();
 
+      console.log('API Response:', data);
+
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch news');
       }
@@ -36,6 +38,7 @@ export default function Home() {
       setCached(data.cached || false);
       setCachedAt(data.cachedAt || null);
     } catch (err) {
+      console.error('Error fetching news:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
       setNews([]);
     } finally {
