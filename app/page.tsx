@@ -22,6 +22,11 @@ export default function Home() {
   }, [selectedCategory, language]);
 
   async function fetchNews(forceRefresh = false) {
+    // Capture current news IDs BEFORE any state changes
+    const previousNewsIds = forceRefresh && news.length > 0
+      ? new Set<string>(news.map(item => item.id))
+      : null;
+
     setLoading(true);
     setError(null);
 
@@ -39,18 +44,16 @@ export default function Home() {
       const newData = data.data || [];
 
       // Track new news items (only when force refreshing)
-      if (forceRefresh && news.length > 0) {
-        // Compare with CURRENT displayed news, not previousNewsIds
-        const currentNewsIds = new Set<string>(news.map(item => item.id));
+      if (forceRefresh && previousNewsIds) {
         const newIds = new Set<string>();
 
         console.log('=== DEBUG NEW NEWS ===');
-        console.log('Current news IDs:', Array.from(currentNewsIds));
+        console.log('Previous news IDs:', Array.from(previousNewsIds));
         console.log('New data IDs:', newData.map((item: ObjectiveNews) => item.id));
 
-        // Find truly new items (not in current displayed list)
+        // Find truly new items (not in previous displayed list)
         newData.forEach((item: ObjectiveNews) => {
-          if (!currentNewsIds.has(item.id)) {
+          if (!previousNewsIds.has(item.id)) {
             console.log('Found NEW item:', item.id, item.title);
             newIds.add(item.id);
           }
