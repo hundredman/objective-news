@@ -66,10 +66,11 @@ export default function Home() {
             setNewNewsIds(new Set());
           }, 10000);
         }
-      }
 
-      // Update previous news IDs for next refresh (always update when data changes)
-      if (!forceRefresh || previousNewsIds.size === 0) {
+        // Update previous news IDs after force refresh
+        setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
+      } else if (!forceRefresh) {
+        // Update previous news IDs for initial load or category/language change
         setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
       }
 
