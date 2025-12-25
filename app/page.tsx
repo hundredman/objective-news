@@ -34,9 +34,11 @@ export default function Home() {
         throw new Error(data.error || 'Failed to fetch news');
       }
 
-      setNews(data.data);
+      setNews(data.data || []);
       setCached(data.cached || false);
       setCachedAt(data.cachedAt || null);
+
+      console.log('News loaded:', data.data?.length || 0, 'articles');
     } catch (err) {
       console.error('Error fetching news:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
