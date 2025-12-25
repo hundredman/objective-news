@@ -15,7 +15,6 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cached, setCached] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
-  const [previousNewsIds, setPreviousNewsIds] = useState<Set<string>>(new Set());
   const [newNewsIds, setNewNewsIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -40,12 +39,14 @@ export default function Home() {
       const newData = data.data || [];
 
       // Track new news items (only when force refreshing)
-      if (forceRefresh && previousNewsIds.size > 0) {
+      if (forceRefresh && news.length > 0) {
+        // Compare with CURRENT displayed news, not previousNewsIds
+        const currentNewsIds = new Set<string>(news.map(item => item.id));
         const newIds = new Set<string>();
 
-        // Find truly new items (not in previous list)
+        // Find truly new items (not in current displayed list)
         newData.forEach((item: ObjectiveNews) => {
-          if (!previousNewsIds.has(item.id)) {
+          if (!currentNewsIds.has(item.id)) {
             newIds.add(item.id);
           }
         });
@@ -66,12 +67,6 @@ export default function Home() {
             setNewNewsIds(new Set());
           }, 10000);
         }
-
-        // Update previous news IDs after force refresh
-        setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
-      } else if (!forceRefresh) {
-        // Update previous news IDs for initial load or category/language change
-        setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
       }
 
       setNews(newData);
