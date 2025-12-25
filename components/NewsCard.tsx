@@ -110,9 +110,9 @@ export default function NewsCard({ news, isNew = false }: NewsCardProps) {
           </div>
           <ul className="space-y-2">
             {(factsExpanded ? news.facts : news.facts.slice(0, 3)).map((fact, index) => (
-              <li key={index} className="flex gap-2 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+              <li key={index} className="flex gap-2 text-sm leading-relaxed text-gray-700 dark:text-gray-300 w-full">
                 <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500 mt-2"></span>
-                <span>{fact}</span>
+                <span className="flex-1 break-words">{fact}</span>
               </li>
             ))}
           </ul>
