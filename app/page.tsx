@@ -41,10 +41,10 @@ export default function Home() {
 
       // Track new news items
       if (forceRefresh && previousNewsIds.size > 0) {
-        const currentIds = new Set(newData.map((item: ObjectiveNews) => item.id));
+        const currentIds = new Set<string>(newData.map((item: ObjectiveNews) => item.id));
         const newIds = new Set<string>();
 
-        currentIds.forEach((id) => {
+        currentIds.forEach((id: string) => {
           if (!previousNewsIds.has(id)) {
             newIds.add(id);
           }
@@ -61,7 +61,7 @@ export default function Home() {
       }
 
       // Update previous news IDs for next refresh
-      setPreviousNewsIds(new Set(newData.map((item: ObjectiveNews) => item.id)));
+      setPreviousNewsIds(new Set<string>(newData.map((item: ObjectiveNews) => item.id)));
 
       setNews(newData);
       setCached(data.cached || false);
