@@ -19,7 +19,7 @@ export const translations = {
     tryAgain: 'Try Again',
     noNews: 'No news available',
     verifiedFacts: 'Verified Facts',
-    moreFacts: 'more facts',
+    moreFacts: 'facts',
     sources: 'Sources',
     refreshNews: 'Refresh News',
     priority: {
@@ -54,7 +54,7 @@ export const translations = {
     tryAgain: '다시 시도',
     noNews: '뉴스가 없습니다',
     verifiedFacts: '검증된 사실',
-    moreFacts: '개 더 보기',
+    moreFacts: '개 사실',
     sources: '출처',
     refreshNews: '뉴스 새로고침',
     priority: {
