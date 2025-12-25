@@ -22,6 +22,11 @@ export const translations = {
     moreFacts: 'more facts',
     sources: 'Sources',
     refreshNews: 'Refresh News',
+    priority: {
+      high: 'Breaking',
+      medium: 'Important',
+      low: 'News',
+    },
     footerTitle: 'Objective News',
     footerDescription: 'Aggregates news from various sources and filters out subjective opinions automatically',
     footerTech: 'NewsAPI',
@@ -51,6 +56,11 @@ export const translations = {
     moreFacts: '개 더 보기',
     sources: '출처',
     refreshNews: '뉴스 새로고침',
+    priority: {
+      high: '속보',
+      medium: '중요',
+      low: '일반',
+    },
     footerTitle: '객관적 뉴스',
     footerDescription: '다양한 출처의 뉴스를 수집하고 주관적인 의견을 자동으로 필터링합니다',
     footerTech: 'NewsAPI',

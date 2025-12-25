@@ -15,10 +15,30 @@ export default function NewsCard({ news }: NewsCardProps) {
   const { language, t } = useLanguage();
   const [imageError, setImageError] = useState(false);
 
-  const importanceColor =
-    news.importance >= 8 ? 'bg-red-500' :
-    news.importance >= 6 ? 'bg-amber-500' :
-    'bg-blue-500';
+  // Priority levels with colors and labels
+  const getPriorityConfig = (importance: number) => {
+    if (importance >= 8) {
+      return {
+        color: 'bg-red-500',
+        label: t.priority.high,
+        icon: '🔴',
+      };
+    } else if (importance >= 6) {
+      return {
+        color: 'bg-amber-500',
+        label: t.priority.medium,
+        icon: '🟡',
+      };
+    } else {
+      return {
+        color: 'bg-blue-500',
+        label: t.priority.low,
+        icon: '🔵',
+      };
+    }
+  };
+
+  const priority = getPriorityConfig(news.importance);
 
   return (
     <article
@@ -38,8 +58,9 @@ export default function NewsCard({ news }: NewsCardProps) {
             onError={() => setImageError(true)}
           />
           <div className="absolute top-3 right-3">
-            <div className={`${importanceColor} text-white px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm bg-opacity-90`}>
-              {news.importance}/10
+            <div className={`${priority.color} text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm bg-opacity-95 flex items-center gap-1.5 shadow-lg`}>
+              <span className="text-sm">{priority.icon}</span>
+              <span>{priority.label}</span>
             </div>
           </div>
         </div>
@@ -54,8 +75,9 @@ export default function NewsCard({ news }: NewsCardProps) {
             })}
           </span>
           {(!news.imageUrl || imageError) && (
-            <div className={`${importanceColor} text-white px-2.5 py-1 rounded-full text-xs font-semibold`}>
-              {news.importance}/10
+            <div className={`${priority.color} text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5`}>
+              <span className="text-xs">{priority.icon}</span>
+              <span>{priority.label}</span>
             </div>
           )}
         </div>
