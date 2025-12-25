@@ -51,9 +51,10 @@ export default function Home() {
           }
         });
 
-        if (newIds.size > 0) {
-          setNewNewsIds(newIds);
+        // Always update newNewsIds (even if empty, to clear previous "new" badges)
+        setNewNewsIds(newIds);
 
+        if (newIds.size > 0) {
           // Scroll to first new news after render
           setTimeout(() => {
             const firstNewElement = document.querySelector('[data-news-new="true"]');
