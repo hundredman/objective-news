@@ -44,12 +44,20 @@ export default function Home() {
         const currentNewsIds = new Set<string>(news.map(item => item.id));
         const newIds = new Set<string>();
 
+        console.log('=== DEBUG NEW NEWS ===');
+        console.log('Current news IDs:', Array.from(currentNewsIds));
+        console.log('New data IDs:', newData.map((item: ObjectiveNews) => item.id));
+
         // Find truly new items (not in current displayed list)
         newData.forEach((item: ObjectiveNews) => {
           if (!currentNewsIds.has(item.id)) {
+            console.log('Found NEW item:', item.id, item.title);
             newIds.add(item.id);
           }
         });
+
+        console.log('Total new items:', newIds.size);
+        console.log('======================');
 
         // Always update newNewsIds (even if empty, to clear previous "new" badges)
         setNewNewsIds(newIds);
