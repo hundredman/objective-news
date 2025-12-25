@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchTopHeadlines, fetchNewsByCategory } from '@/lib/newsapi';
 import { processArticles, groupRelatedNews } from '@/lib/fact-filter';
-import { getCachedNews, cacheNews } from '@/lib/firebase';
 
 // Cache API responses for 5 minutes, but allow dynamic params
 export const revalidate = 300;
 export const dynamic = 'force-dynamic';
-export const fetchCache = 'default-cache';
+
+// In-memory cache (simple and fast, no Firebase timeout issues)
+interface CacheEntry {
+  data: any[];
+  timestamp: number;
+  cachedAt: string;
+}
+
+const memoryCache = new Map<string, CacheEntry>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,17 +26,20 @@ export async function GET(request: NextRequest) {
     // Create cache key with language
     const cacheKey = `${category}-${language}`;
 
-    // Try to get cached news first
-    const cacheResult = await getCachedNews(cacheKey);
-    if (cacheResult && cacheResult.articles.length > 0) {
+    // Check in-memory cache
+    const cached = memoryCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      console.log(`[Cache Hit] ${cacheKey}`);
       return NextResponse.json({
         success: true,
-        data: cacheResult.articles,
-        count: cacheResult.articles.length,
+        data: cached.data,
+        count: cached.data.length,
         cached: true,
-        cachedAt: cacheResult.cachedAt,
+        cachedAt: cached.cachedAt,
       });
     }
+
+    console.log(`[Cache Miss] Fetching fresh data for ${cacheKey}`);
 
     // Fetch news articles
     let articles;
@@ -45,9 +56,13 @@ export async function GET(request: NextRequest) {
     // Group related news items
     const groupedNews = groupRelatedNews(objectiveNews);
 
-    // Cache the results with language key
+    // Cache the results in memory
     const cachedAt = new Date().toISOString();
-    await cacheNews(cacheKey, groupedNews, cachedAt);
+    memoryCache.set(cacheKey, {
+      data: groupedNews,
+      timestamp: Date.now(),
+      cachedAt,
+    });
 
     return NextResponse.json({
       success: true,
