@@ -106,7 +106,7 @@ export default function NewsCard({ news, isNew = false }: NewsCardProps) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {t.verifiedFacts}
+            {t.keyFacts}
           </div>
           <ul className="space-y-2">
             {(factsExpanded ? news.facts : news.facts.slice(0, 3)).map((fact, index) => (

@@ -99,6 +99,24 @@ function isFactualSentence(sentence: string): boolean {
 }
 
 /**
+ * 두 문자열의 유사도 계산 (0-1, 1이 완전히 동일)
+ */
+function calculateSimilarity(str1: string, str2: string): number {
+  const s1 = str1.toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+  const s2 = str2.toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+
+  if (s1 === s2) return 1;
+  if (s1.length === 0 || s2.length === 0) return 0;
+
+  // 짧은 문자열이 긴 문자열에 포함되면 유사도 높음
+  if (s1.includes(s2) || s2.includes(s1)) {
+    return Math.min(s1.length, s2.length) / Math.max(s1.length, s2.length);
+  }
+
+  return 0;
+}
+
+/**
  * 텍스트에서 객관적인 사실만 추출
  */
 function extractFacts(text: string): string[] {
@@ -111,7 +129,7 @@ function extractFacts(text: string): string[] {
     .filter(s => s.length > 0);
 
   // 객관적인 사실만 필터링
-  const facts = sentences
+  let facts = sentences
     .filter(isFactualSentence)
     .filter(s => {
       // "..." (마침표 3개) 또는 "…" (유니코드 생략 기호) 포함된 불완전한 문장 제거
@@ -121,10 +139,20 @@ function extractFacts(text: string): string[] {
       // 문장이 마침표로 끝나지 않으면 추가
       if (!s.endsWith('.')) s += '.';
       return s;
-    })
-    .slice(0, 7); // 최대 7개
+    });
 
-  return facts;
+  // 유사한 사실 제거 (80% 이상 유사하면 중복으로 간주)
+  const uniqueFacts: string[] = [];
+  for (const fact of facts) {
+    const isDuplicate = uniqueFacts.some(existing =>
+      calculateSimilarity(fact, existing) > 0.8
+    );
+    if (!isDuplicate) {
+      uniqueFacts.push(fact);
+    }
+  }
+
+  return uniqueFacts.slice(0, 7); // 최대 7개
 }
 
 /**
