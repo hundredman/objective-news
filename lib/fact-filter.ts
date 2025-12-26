@@ -117,6 +117,7 @@ function isFactualSentence(sentence: string): boolean {
     /원\s*[,\/모두]/,  // 가격 표시 (5만9000원, 21만8000원 모두)
     /\d+원/,  // 숫자+원 (가격)
     /mL\s*\//,  // 용량/가격 표시 (9mL/3만4000원)
+    /^\d+\s+[가-힣]/,  // 번호로 시작하는 제품 리스트 (1 프레이그런스, 2 파촐리...)
   ];
 
   for (const pattern of metadataPatterns) {
