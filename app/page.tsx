@@ -22,12 +22,12 @@ export default function Home() {
     // Scroll to top on category or language change
     window.scrollTo({ top: 0, behavior: 'instant' });
     // Force refresh on initial load to get latest news
-    fetchNews(true);
+    fetchNews(true, true); // Pass skipAutoScroll=true for language/category changes
   }, [selectedCategory, language]);
 
-  async function fetchNews(forceRefresh = false) {
+  async function fetchNews(forceRefresh = false, skipAutoScroll = false) {
     // Capture current news IDs BEFORE any state changes
-    const previousNewsIds = forceRefresh && news.length > 0
+    const previousNewsIds = forceRefresh && news.length > 0 && !skipAutoScroll
       ? new Set<string>(news.map(item => item.id))
       : null;
 
