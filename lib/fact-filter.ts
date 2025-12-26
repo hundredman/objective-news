@@ -6,8 +6,10 @@ const SUBJECTIVE_PATTERNS = [
   /allegedly/gi,
   /it seems/gi,
   /appears to be/gi,
+  /seems to/gi,
   /sources say/gi,
   /according to sources/gi,
+  /said in a statement/gi,
   /might/gi,
   /could/gi,
   /may/gi,
@@ -16,13 +18,24 @@ const SUBJECTIVE_PATTERNS = [
   /rumor/gi,
   /speculation/gi,
   /unconfirmed/gi,
+  /believed to be/gi,
   /believed to/gi,
+  /thought to be/gi,
   /thought to/gi,
   /expected to/gi,
   /likely/gi,
   /probably/gi,
   /perhaps/gi,
   /maybe/gi,
+
+  // 시간 메타데이터
+  /^earlier today/i,
+  /^this morning/i,
+  /^yesterday/i,
+  /^last night/i,
+  /^breaking:/i,
+  /^update:/i,
+  /^correction:/i,
 ];
 
 // 감정적이거나 편향된 표현들
@@ -128,6 +141,29 @@ function isFactualSentence(sentence: string): boolean {
     /카드\/한컷/,  // 카드/한컷 콘텐츠 타입
     /에서 운영하는.*?포털사이트/,  // 사이트 소개문
     /서비스합니다/,  // 서비스 소개 끝부분
+
+    // 한국어 인용 및 전달 패턴
+    /라고 밝혔다/,
+    /라고 말했다/,
+    /라고 전했다/,
+    /라고 강조했다/,
+    /것으로 알려져/,
+    /라는 소문/,
+    /라는 이야기/,
+
+    // 한국어 분석/평가 패턴
+    /것으로 평가/,
+    /것으로 분석/,
+    /로 풀이/,
+    /것으로 해석/,
+
+    // 한국어 방송 관련
+    /다시보기/,
+    /본방송/,
+    /재방송/,
+    /편집자주/,
+    /취재/,
+    /특파원/,
   ];
 
   for (const pattern of metadataPatterns) {
