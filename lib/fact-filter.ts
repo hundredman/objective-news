@@ -57,6 +57,21 @@ function isFactualSentence(sentence: string): boolean {
   // 질문 형태 제외
   if (sentence.includes('?')) return false;
 
+  // 기자 정보, 메타데이터 패턴 제외
+  const metadataPatterns = [
+    /\[.*?기자\]/,  // [OSEN=장우영 기자]
+    /\(.*?기자\)/,  // (연합뉴스 기자)
+    /^.*?기자\s*=/,  // 장우영 기자 =
+    /<.*?>/,  // <방송 시청 후 작성된 리뷰 기사입니다>
+    /\[.*?=.*?\]/,  // [OSEN=...]
+    /^.*?=연합뉴스\)/,  // 의정부=연합뉴스)
+    /^\w+\s*=\s*연합뉴스\)/,  // 의정부=연합뉴스)
+  ];
+
+  for (const pattern of metadataPatterns) {
+    if (pattern.test(sentence)) return false;
+  }
+
   const isKorean = isKoreanText(sentence);
 
   // 한국어가 아닌 경우에만 영어 패턴 체크
