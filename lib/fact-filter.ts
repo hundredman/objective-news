@@ -437,11 +437,13 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
 
     // Promotional/Advertising articles (English)
     /\d+\s+(places|spots|locations|destinations)\s+to\s+(visit|try|explore)/i,
-    /\d+\s+(products|items|things)\s+to\s+(buy|try|consider)/i,
+    /\d+\s+(products|items|things|apps|tools|ways|tips|tricks)\s+to\s+(buy|try|consider|install|use|know)/i,
+    /\d+\s+(products|items|things|apps|tools)\s+(you\s+)?(should|must|need)\s+/i,
     /best\s+\d+/i,
     /top\s+\d+/i,
     /\d+\s+best/i,
     /\d+\s+top/i,
+    /\d+\s+niche/i,
     /we recommend/i,
     /recommended\s+\d+/i,
     /gift guide/i,
@@ -454,6 +456,8 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
     /special offer/i,
     /limited time/i,
     /\d+%\s+off/i,
+    /you should (install|buy|try|get|download)/i,
+    /you must (install|buy|try|get|download)/i,
   ];
 
   const titleAndDesc = `${article.title} ${article.description || ''}`;
