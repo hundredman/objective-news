@@ -50,8 +50,9 @@ export default function NewsCard({ news, isNew = false }: NewsCardProps) {
       }`}
       style={{ background: 'var(--card-bg)' }}
     >
-      {news.imageUrl && !imageError && (
-        <div className="relative w-full h-48 overflow-hidden bg-gray-100 dark:bg-gray-800">
+      {/* Header image or placeholder */}
+      <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+        {news.imageUrl && !imageError ? (
           <Image
             src={news.imageUrl}
             alt={news.title}
@@ -62,14 +63,20 @@ export default function NewsCard({ news, isNew = false }: NewsCardProps) {
             loading="lazy"
             onError={() => setImageError(true)}
           />
-          <div className="absolute top-3 right-3">
-            <div className={`${priority.color} text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm bg-opacity-95 flex items-center gap-1.5 shadow-lg`}>
-              <span className="text-sm">{priority.icon}</span>
-              <span>{priority.label}</span>
-            </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg className="w-16 h-16 text-gray-300 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+          </div>
+        )}
+        <div className="absolute top-3 right-3">
+          <div className={`${priority.color} text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm bg-opacity-95 flex items-center gap-1.5 shadow-lg`}>
+            <span className="text-sm">{priority.icon}</span>
+            <span>{priority.label}</span>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="p-6">
         <div className="flex items-center justify-between mb-3">
@@ -79,12 +86,6 @@ export default function NewsCard({ news, isNew = false }: NewsCardProps) {
               locale: language === 'ko' ? ko : undefined
             })}
           </span>
-          {(!news.imageUrl || imageError) && (
-            <div className={`${priority.color} text-white px-2.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5`}>
-              <span className="text-xs">{priority.icon}</span>
-              <span>{priority.label}</span>
-            </div>
-          )}
         </div>
 
         <div className="flex items-start gap-2 mb-4">
