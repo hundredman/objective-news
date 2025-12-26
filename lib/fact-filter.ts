@@ -139,6 +139,13 @@ function isFactualSentence(sentence: string): boolean {
       /추정/,
       /예상/,
       /전망/,
+      /수도 있다/,
+      /지도 모른다/,
+      /일지도 모른다/,
+      /일 수 있다/,
+      /가능성/,
+      /것으로 추측/,
+      /것으로 예상/,
     ];
 
     for (const pattern of koreanSubjectivePatterns) {
