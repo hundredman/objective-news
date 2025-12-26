@@ -20,7 +20,7 @@ export default function Home() {
 
   useEffect(() => {
     // Scroll to top on category or language change
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
     // Force refresh on initial load to get latest news
     fetchNews(true);
   }, [selectedCategory, language]);
