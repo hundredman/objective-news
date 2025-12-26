@@ -67,6 +67,12 @@ function isFactualSentence(sentence: string): boolean {
     /^.*?=연합뉴스\)/,  // 의정부=연합뉴스)
     /^\w+\s*=\s*연합뉴스\)/,  // 의정부=연합뉴스)
 
+    // 편집자 주석 및 메타 정보
+    /^\[.*?\]\.?$/,  // [This story contains spoilers...]
+    /\[editor.*?\]/i,  // [Editor's note...]
+    /\[update.*?\]/i,  // [Updated...]
+    /spoiler/i,  // Spoiler warnings
+
     // URL 및 링크 관련
     /read more at/i,
     /continue reading/i,
