@@ -16,8 +16,11 @@ export default function Home() {
   const [cached, setCached] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [newNewsIds, setNewNewsIds] = useState<Set<string>>(new Set());
+  const [showNoNewNews, setShowNoNewNews] = useState(false);
 
   useEffect(() => {
+    // Scroll to top on category or language change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     // Force refresh on initial load to get latest news
     fetchNews(true);
   }, [selectedCategory, language]);
@@ -79,6 +82,12 @@ export default function Home() {
           setTimeout(() => {
             setNewNewsIds(new Set());
           }, 10000);
+        } else {
+          // No new news found - show message
+          setShowNoNewNews(true);
+          setTimeout(() => {
+            setShowNoNewNews(false);
+          }, 3000);
         }
       }
 
@@ -224,6 +233,11 @@ export default function Home() {
             >
               {t.refreshNews}
             </button>
+            {showNoNewNews && (
+              <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 animate-fade-in">
+                {language === 'ko' ? '새로운 뉴스가 없습니다' : 'No new news available'}
+              </div>
+            )}
           </div>
         )}
       </main>
