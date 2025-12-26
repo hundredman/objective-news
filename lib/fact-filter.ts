@@ -57,7 +57,7 @@ function isFactualSentence(sentence: string): boolean {
   // 질문 형태 제외
   if (sentence.includes('?')) return false;
 
-  // 기자 정보, 메타데이터 패턴 제외
+  // 기자 정보, 메타데이터, 광고성 패턴 제외
   const metadataPatterns = [
     /\[.*?기자\]/,  // [OSEN=장우영 기자]
     /\(.*?기자\)/,  // (연합뉴스 기자)
@@ -66,6 +66,37 @@ function isFactualSentence(sentence: string): boolean {
     /\[.*?=.*?\]/,  // [OSEN=...]
     /^.*?=연합뉴스\)/,  // 의정부=연합뉴스)
     /^\w+\s*=\s*연합뉴스\)/,  // 의정부=연합뉴스)
+
+    // URL 및 링크 관련
+    /read more at/i,
+    /continue reading/i,
+    /full story/i,
+    /click here/i,
+    /visit our/i,
+    /http[s]?:\/\//,  // URL 포함
+
+    // 구독 및 광고
+    /subscribe to/i,
+    /follow us/i,
+    /join us/i,
+    /sign up/i,
+    /newsletter/i,
+    /get updates/i,
+
+    // 저작권
+    /©\s*\d{4}/,  // © 2024
+    /copyright/i,
+    /all rights reserved/i,
+    /proprietary/i,
+
+    // 한국어 광고성 패턴
+    /자세한 내용은/,
+    /더 보기/,
+    /더보기/,
+    /구독하기/,
+    /팔로우/,
+    /클릭/,
+    /바로가기/,
   ];
 
   for (const pattern of metadataPatterns) {
@@ -176,8 +207,12 @@ function extractFacts(text: string): string[] {
       const nextChar = text[i + 1];
       const nextNextChar = text[i + 2];
 
-      // 다음이 공백이고 그 다음이 대문자/한글/숫자/특수문자면 문장 끝
-      if (nextChar === ' ' && nextNextChar && /[A-Z가-힣0-9\[\(\<]/.test(nextNextChar)) {
+      // 약어 패턴 체크 (vs., Mr., Dr., etc.)
+      const beforeDot = currentSentence.slice(-10).toLowerCase();
+      const isAbbreviation = /\b(vs|mr|mrs|ms|dr|prof|sr|jr|etc|e\.g|i\.e)\.$/.test(beforeDot);
+
+      // 약어가 아니고, 다음이 공백이고 그 다음이 대문자/한글/숫자/특수문자면 문장 끝
+      if (!isAbbreviation && nextChar === ' ' && nextNextChar && /[A-Z가-힣0-9\[\(\<]/.test(nextNextChar)) {
         sentences.push(currentSentence.trim());
         currentSentence = '';
         i++; // 공백 건너뛰기
