@@ -18,7 +18,8 @@ export default function Home() {
   const [newNewsIds, setNewNewsIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetchNews();
+    // Force refresh on initial load to get latest news
+    fetchNews(true);
   }, [selectedCategory, language]);
 
   async function fetchNews(forceRefresh = false) {
