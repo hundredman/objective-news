@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import NewsCard from '@/components/NewsCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import SkeletonCard from '@/components/SkeletonCard';
@@ -17,6 +17,8 @@ export default function Home() {
   const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [newNewsIds, setNewNewsIds] = useState<Set<string>>(new Set());
   const [showNoNewNews, setShowNoNewNews] = useState(false);
+  const noNewNewsTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const newBadgeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Scroll to top on category or language change
@@ -24,6 +26,18 @@ export default function Home() {
     // Force refresh on initial load to get latest news
     fetchNews(true, true); // Pass skipAutoScroll=true for language/category changes
   }, [selectedCategory, language]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (noNewNewsTimerRef.current) {
+        clearTimeout(noNewNewsTimerRef.current);
+      }
+      if (newBadgeTimerRef.current) {
+        clearTimeout(newBadgeTimerRef.current);
+      }
+    };
+  }, []);
 
   async function fetchNews(forceRefresh = false, skipAutoScroll = false) {
     // Capture current news IDs BEFORE any state changes
@@ -78,15 +92,24 @@ export default function Home() {
             }
           }, 100);
 
-          // Clear "new" badges after 10 seconds
-          setTimeout(() => {
+          // Clear previous timer and set new one for "new" badges
+          if (newBadgeTimerRef.current) {
+            clearTimeout(newBadgeTimerRef.current);
+          }
+          newBadgeTimerRef.current = setTimeout(() => {
             setNewNewsIds(new Set());
+            newBadgeTimerRef.current = null;
           }, 10000);
         } else {
           // No new news found - show message
+          // Clear previous timer first
+          if (noNewNewsTimerRef.current) {
+            clearTimeout(noNewNewsTimerRef.current);
+          }
           setShowNoNewNews(true);
-          setTimeout(() => {
+          noNewNewsTimerRef.current = setTimeout(() => {
             setShowNoNewNews(false);
+            noNewNewsTimerRef.current = null;
           }, 3000);
         }
       }
