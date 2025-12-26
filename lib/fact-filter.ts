@@ -392,6 +392,47 @@ function calculateImportance(article: NewsArticle): number {
  * 뉴스 기사를 객관적인 사실로 변환
  */
 export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveNews | null {
+  // 기사 제목과 설명에서 완전히 제외해야 할 콘텐츠 패턴
+  const articleExclusionPatterns = [
+    // 운세/점성술 기사
+    /운세/,
+    /띠/,
+    /년생/,
+    /오늘의 운세/,
+    /내일의 운세/,
+    /주간 운세/,
+    /월간 운세/,
+    /별자리/,
+    /타로/,
+    /사주/,
+    /궁합/,
+
+    // 광고성/홍보 기사
+    /\d+곳을 소개합니다/,
+    /소개합니다/,
+    /추천/,
+    /베스트/,
+    /인기\s*\d+/,
+    /TOP\s*\d+/i,
+    /할인/,
+    /특가/,
+    /이벤트/,
+    /프로모션/,
+    /숙소\s*\d+/,
+    /맛집\s*\d+/,
+    /여행지\s*\d+/,
+    /제품\s*\d+/,
+  ];
+
+  const titleAndDesc = `${article.title} ${article.description || ''}`;
+
+  // 제외 패턴에 매칭되는 기사는 null 반환
+  for (const pattern of articleExclusionPatterns) {
+    if (pattern.test(titleAndDesc)) {
+      return null;
+    }
+  }
+
   const fullText = `${article.title}. ${article.description || ''} ${article.content || ''}`;
   const facts = extractFacts(fullText);
 
