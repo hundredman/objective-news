@@ -394,7 +394,7 @@ function calculateImportance(article: NewsArticle): number {
 export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveNews | null {
   // 기사 제목과 설명에서 완전히 제외해야 할 콘텐츠 패턴
   const articleExclusionPatterns = [
-    // 운세/점성술 기사
+    // 운세/점성술 기사 (Korean)
     /운세/,
     /띠/,
     /년생/,
@@ -407,7 +407,19 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
     /사주/,
     /궁합/,
 
-    // 광고성/홍보 기사
+    // Fortune/Horoscope articles (English)
+    /horoscope/i,
+    /zodiac sign/i,
+    /astrology/i,
+    /daily horoscope/i,
+    /weekly horoscope/i,
+    /monthly horoscope/i,
+    /star sign/i,
+    /tarot/i,
+    /fortune telling/i,
+    /your sign/i,
+
+    // 광고성/홍보 기사 (Korean)
     /\d+곳을 소개합니다/,
     /소개합니다/,
     /추천/,
@@ -422,6 +434,26 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
     /맛집\s*\d+/,
     /여행지\s*\d+/,
     /제품\s*\d+/,
+
+    // Promotional/Advertising articles (English)
+    /\d+\s+(places|spots|locations|destinations)\s+to\s+(visit|try|explore)/i,
+    /\d+\s+(products|items|things)\s+to\s+(buy|try|consider)/i,
+    /best\s+\d+/i,
+    /top\s+\d+/i,
+    /\d+\s+best/i,
+    /\d+\s+top/i,
+    /we recommend/i,
+    /recommended\s+\d+/i,
+    /gift guide/i,
+    /shopping guide/i,
+    /buyer's guide/i,
+    /deal/i,
+    /discount/i,
+    /sale/i,
+    /promotion/i,
+    /special offer/i,
+    /limited time/i,
+    /\d+%\s+off/i,
   ];
 
   const titleAndDesc = `${article.title} ${article.description || ''}`;
