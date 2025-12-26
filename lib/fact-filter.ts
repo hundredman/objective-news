@@ -137,14 +137,43 @@ function calculateSimilarity(str1: string, str2: string): number {
 function extractFacts(text: string): string[] {
   if (!text) return [];
 
-  // 문장으로 분리 (마침표, 느낌표, 세미콜론 기준)
-  const sentences = text
-    .split(/[.!;]\s+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
+  // 문장으로 분리
+  // 마침표, 느낌표, 세미콜론 뒤에 공백+대문자/한글이 오는 경우만 문장 구분
+  let sentences: string[] = [];
+  let currentSentence = '';
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    currentSentence += char;
+
+    // 문장 종결 기호 확인
+    if (char === '.' || char === '!' || char === ';') {
+      // 다음 문자들 확인
+      const nextChar = text[i + 1];
+      const nextNextChar = text[i + 2];
+
+      // 다음이 공백이고 그 다음이 대문자/한글/숫자/특수문자면 문장 끝
+      if (nextChar === ' ' && nextNextChar && /[A-Z가-힣0-9\[\(\<]/.test(nextNextChar)) {
+        sentences.push(currentSentence.trim());
+        currentSentence = '';
+        i++; // 공백 건너뛰기
+      }
+      // 텍스트의 마지막이면 문장 끝
+      else if (i === text.length - 1) {
+        sentences.push(currentSentence.trim());
+        currentSentence = '';
+      }
+    }
+  }
+
+  // 남은 문장 추가
+  if (currentSentence.trim()) {
+    sentences.push(currentSentence.trim());
+  }
 
   // 객관적인 사실만 필터링
   let facts = sentences
+    .filter(s => s.length > 0)
     .filter(isFactualSentence)
     .filter(s => {
       // "..." (마침표 3개) 또는 "…" (유니코드 생략 기호) 포함된 불완전한 문장 제거
@@ -152,7 +181,7 @@ function extractFacts(text: string): string[] {
     })
     .map(s => {
       // 문장이 마침표로 끝나지 않으면 추가
-      if (!s.endsWith('.')) s += '.';
+      if (!s.endsWith('.') && !s.endsWith('!') && !s.endsWith(';')) s += '.';
       return s;
     });
 
