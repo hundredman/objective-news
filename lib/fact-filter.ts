@@ -62,10 +62,11 @@ function isFactualSentence(sentence: string): boolean {
     /\[.*?기자\]/,  // [OSEN=장우영 기자]
     /\(.*?기자\)/,  // (연합뉴스 기자)
     /^.*?기자\s*=/,  // 장우영 기자 =
+    /기자,.*?기자/,  // 기자, 페르난도 두아르테 기자
     /<.*?>/,  // <방송 시청 후 작성된 리뷰 기사입니다>
     /\[.*?=.*?\]/,  // [OSEN=...]
-    /^.*?=연합뉴스\)/,  // 의정부=연합뉴스)
-    /^\w+\s*=\s*연합뉴스\)/,  // 의정부=연합뉴스)
+    /^.*?=.*?뉴스\)/,  // 의정부=연합뉴스), 서울=MBC뉴스)
+    /^\w+\s*=\s*.*?뉴스\)/,  // 의정부=연합뉴스), 서울=MBC뉴스)
 
     // 편집자 주석 및 메타 정보
     /^\[.*?\]\.?$/,  // [This story contains spoilers...]
@@ -132,7 +133,7 @@ function isFactualSentence(sentence: string): boolean {
     return hasNumbers || hasProperNouns || hasDate;
   } else {
     // 한국어의 경우 더 관대하게 처리
-    // 한국어 주관적 패턴
+    // 한국어 주관적 및 질문 패턴
     const koreanSubjectivePatterns = [
       /것으로 보인다/,
       /것으로 알려졌다/,
@@ -146,13 +147,20 @@ function isFactualSentence(sentence: string): boolean {
       /가능성/,
       /것으로 추측/,
       /것으로 예상/,
+      /무엇이고/,  // 질문 형태
+      /어떻게/,    // 질문 형태
+      /왜/,        // 질문 형태
+      /언제/,      // 질문 형태
+      /어디/,      // 질문 형태
+      /누구/,      // 질문 형태
+      /얼마나/,    // 질문 형태 (얼마나 우려해야)
     ];
 
     for (const pattern of koreanSubjectivePatterns) {
       if (pattern.test(sentence)) return false;
     }
 
-    // 한국어는 기본적으로 통과 (질문만 제외)
+    // 한국어는 기본적으로 통과
     return true;
   }
 }
