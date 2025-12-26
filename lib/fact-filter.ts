@@ -443,7 +443,10 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
     /top\s+\d+/i,
     /\d+\s+best/i,
     /\d+\s+top/i,
+    /\d+\s+most\s+popular/i,
+    /\d+\s+favorite/i,
     /\d+\s+niche/i,
+    /^list:/i,
     /we recommend/i,
     /recommended\s+\d+/i,
     /gift guide/i,
@@ -458,6 +461,9 @@ export function processArticleToObjectiveFacts(article: NewsArticle): ObjectiveN
     /\d+%\s+off/i,
     /you should (install|buy|try|get|download)/i,
     /you must (install|buy|try|get|download)/i,
+    /what readers loved/i,
+    /reader favorites/i,
+    /\d+\s+(recipes|meals|dishes)\s+(of|from)\s+\d{4}/i,
   ];
 
   const titleAndDesc = `${article.title} ${article.description || ''}`;
