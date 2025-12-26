@@ -141,13 +141,37 @@ function extractFacts(text: string): string[] {
   // 마침표, 느낌표, 세미콜론 뒤에 공백+대문자/한글이 오는 경우만 문장 구분
   let sentences: string[] = [];
   let currentSentence = '';
+  let inQuotes = false;
+  let quoteChar = '';
 
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     currentSentence += char;
 
-    // 문장 종결 기호 확인
-    if (char === '.' || char === '!' || char === ';') {
+    // 따옴표 상태 추적 (일반 따옴표와 유니코드 따옴표)
+    const quoteChars = ['"', "'", '\u2018', '\u2019', '\u201C', '\u201D']; // ' ' " "
+    if (quoteChars.includes(char)) {
+      if (!inQuotes) {
+        inQuotes = true;
+        quoteChar = char;
+      } else {
+        // 닫는 따옴표 확인 (짝 맞추기)
+        const isClosingQuote =
+          char === quoteChar ||
+          (quoteChar === '"' && char === '\u201D') ||
+          (quoteChar === '\u201C' && char === '\u201D') ||
+          (quoteChar === "'" && char === '\u2019') ||
+          (quoteChar === '\u2018' && char === '\u2019');
+
+        if (isClosingQuote) {
+          inQuotes = false;
+          quoteChar = '';
+        }
+      }
+    }
+
+    // 문장 종결 기호 확인 (따옴표 안에 있으면 무시)
+    if (!inQuotes && (char === '.' || char === '!' || char === ';')) {
       // 다음 문자들 확인
       const nextChar = text[i + 1];
       const nextNextChar = text[i + 2];
